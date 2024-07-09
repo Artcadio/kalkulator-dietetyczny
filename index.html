@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator parametrów dietetycznych</title>
+</head>
+<body>
+    <h1>Kalkulator parametrów dietetycznych</h1>
+    
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="excelFile" name="excelFile" accept=".xls,.xlsx">
+        <button type="submit">Załaduj plik Excel</button>
+    </form>
+
+    <div id="result">
+        <!-- Wyniki będą tutaj -->
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            let formData = new FormData();
+            formData.append('excelFile', document.getElementById('excelFile').files[0]);
+
+            fetch('/process_excel', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Obsługa odpowiedzi z serwera
+                displayResults(data);
+            })
+            .catch(error => console.error('Błąd podczas przetwarzania pliku Excel:', error));
+        });
+
+        function displayResults(data) {
+            let resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = ''; // Wyczyść poprzednie wyniki
+
+            // Wyświetl wyniki w formacie HTML
+            let html = '<h2>Wyniki analizy</h2>';
+            html += '<p>Ilość kcal: ' + data.kcal + '</p>';
+            html += '<p>Witaminy:</p>';
+            for (let vitamin in data.vitamins) {
+                html += '<p>' + vitamin + ': ' + data.vitamins[vitamin] + '</p>';
+            }
+            html += '<p>Minerały:</p>';
+            for (let mineral in data.minerals) {
+                html += '<p>' + mineral + ': ' + data.minerals[mineral] + '</p>';
+            }
+
+            resultDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
